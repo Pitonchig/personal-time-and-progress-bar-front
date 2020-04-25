@@ -12,6 +12,32 @@ var treeData = {
   ]
 };
 
+const axiosConfig = {
+        crossDomain: true,
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        data: {},
+      };
+
+var todoStorage = {
+  fetch: function () {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+  },
+  sync: function (todos) {
+    axios
+      .post('/api/v1/todos', todos)
+      .then(response => (todoStorage.save(response.data)))
+      .catch(error => console.log(error))
+  },
+  save: function(todos){
+    console.log(todos)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
+  }
+}
+
+
 Vue.component("item", {
   template:
     `<li class="element">
@@ -76,7 +102,7 @@ Vue.component("root", {
       <label>
         {{ model.name }}
         <span>{{model.projects.length}}</span>
-        <progress max="100" value="0"></progress>
+        <progress class="progress is-success" value="60" max="100">60%</progress>
       </label>
       <ul>
         <project
@@ -106,7 +132,15 @@ Vue.component("root", {
 
 new Vue({
   el: "#app",
+
   data: {
     treeData: treeData
   }
+//  ,
+//  mounted() {
+//    axios
+//      .get('http://127.0.0.1:8080/api/projects', axiosConfig)
+//      .then(response => (console.log(response)));
+//  }
+
 });
