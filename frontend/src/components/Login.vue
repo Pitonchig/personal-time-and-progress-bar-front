@@ -30,10 +30,11 @@ export default {
   },
   methods: {
     callLogin() {
+      console.log('[UI:Login] login: name=' + this.user);
       this.errors = [];
       this.$store.dispatch("login", { user: this.user, password: this.password})
         .then(() => {
-          this.$router.push('/Protected')
+          this.$router.push('/Projects')
         })
         .catch(error => {
           this.loginError = true;

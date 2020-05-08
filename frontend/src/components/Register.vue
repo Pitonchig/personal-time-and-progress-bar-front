@@ -1,5 +1,5 @@
 <template>
-    <form class="container" @submit.prevent="register()">
+    <form class="container" @submit.prevent="register">
       <div class="form-group">
         <label for="input-name">Name</label>
         <input class="form-control" v-model="user" id="input-name" placeholder="Name" >
@@ -13,7 +13,10 @@
         <input type="email" v-model="email" class="form-control" id="input-email" placeholder="Enter email">
       </div>
       <button type="submit" class="btn btn-primary">Submit</button>
-      <p v-if="error" class="error">{{errors}}</p>
+
+      <ul v-if="error" class="list-group">
+        <li class="list-group-item list-group-item-danger" v-for="(model, index) in errorsList">{{model.message}}.</li>
+      </ul>
     </form>
 </template>
 
@@ -28,20 +31,22 @@ export default {
       password: '',
       email: '',
       error: false,
-      errors: []
+      errorsList: []
     }
   },
+
   methods: {
-    callLogin() {
-      this.errors = [];
-      this.$store.dispatch("register", { user: this.user, password: this.password, email: this.email} )
+    register() {
+      this.errorsList = [];
+      this.$store.dispatch("registerUser", { user: this.user, password: this.password, email: this.email} )
         .then(() => {
-          this.$router.push('/Protected')
+          this.error = false;
+          this.$router.push('/protected');
         })
         .catch(error => {
-          this.errors.push(error);
-          this.error = true
-        })
+          this.error = true;
+          this.errorsList = error.errors;
+        });
     }
   }
 }

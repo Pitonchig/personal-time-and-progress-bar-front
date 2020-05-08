@@ -1,10 +1,22 @@
 <template>
   <div class="mx-lg">
     <li class="list-group-item list-group-item-light">
-      <div class="row mx-auto" @click="toggle">
-        <label class="col-md-auto folder">{{model.name}}</label>
-        <div class="progress col-sm">
-          <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+      <div class="row mx-auto" >
+        <div class="col-auto folder" @click="toggle" > {{getTextIcon}} </div>
+        <div class="col-auto">
+          <span @click="editing=true" v-show="!editing">
+            {{model.name}}
+          </span>
+          <span v-show="editing" >
+            <input :value="model.name"
+              @change="updateName(model, $event.target.value)"
+              @keyup.enter="editing=false"
+              type="text"
+              class="form-control" >
+          </span>
+        </div>
+        <div class="col-lg progress">
+          <div class="progress-bar" role="progressbar" v-bind:style="{width: model.percent + '%'}" aria-valuemin="0" aria-valuemax="100">{{model.percent}} %</div>
         </div>
       </div>
       <ul class="list-group" v-show="open" :class="{'open': open}">
@@ -23,16 +35,40 @@ export default {
   props: ['model'],
   data () {
     return {
+      editing: false,
       open: true
     }
   },
+
+  computed: {
+    getTextIcon() {
+      return this.open? '-' : '+';
+    },
+
+    getPercent: function() {
+      return this.model.percent + '%';
+    }
+
+  },
+
   methods: {
     toggle: function() {
-        this.open = !this.open;
+      console.log('[UI:Project] toggle.');
+      this.open = !this.open;
     },
+
     addItem: function(project) {
-      console.log('add new item!');
+      console.log('[UI:Project] add new item.');
       this.$store.dispatch('addItem', project)
+    },
+
+    updateName: function(project, projectName) {
+      console.log('[UI:Project] update name: name=' + projectName);
+      var data = {
+        id: project.id,
+        name: projectName
+      };
+      this.$store.dispatch('updateProject', {project, data});
     }
   },
   components: {
@@ -40,3 +76,14 @@ export default {
   }
 }
 </script>
+
+<style>
+
+.folder {
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 20px;
+}
+
+
+</style>

@@ -6,7 +6,11 @@ module.exports = {
   devServer: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8098', // this configuration needs to correspond to the Spring Boot backends' application.properties server.port
+        target: {
+          host: "0.0.0.0",
+          port: 8080,
+          protocol: 'http:'
+        },
         ws: true,
         changeOrigin: true
       }

@@ -4,88 +4,278 @@ import api from './components/backend-api'
 
 Vue.use(Vuex);
 
+//    projects: [
+//      {
+//        id:
+//        name: "Project-1",
+//        percent:
+//        items: [
+//          {
+//            name: "Item1-1",
+//            isCompleted: false
+//          }
+//        ]
+//      }
+//    ]
+
 export default new Vuex.Store({
-    state: {
-        loginSuccess: false,
-        loginError: false,
-        userName: null,
-        userPass: null,
-        projects: [
-            {
-              name: "Project-1",
-              items: [{ name: "Item1-1" }, { name: "Item1-2" }]
-            },
-            {
-              name: "Project-2",
-              items: [{ name: "Item2-1" }, { name: "Item2-2" }]
+  state: {
+    loginSuccess: false,
+    user: {
+      id: null,
+      name: null
+    },
+    projects: [ ]
+  },
+
+  mutations: {
+    LOGIN(state, payload){
+      console.log('[STORE:MUTATIONS] login');
+      state.loginSuccess = true;
+
+      state.user = {
+        id: payload.userId,
+        name: payload.userName
+      };
+    },
+
+    LOGOUT(state){
+      console.log('[STORE:MUTATIONS] logout');
+      state.loginSuccess = false;
+
+      state.user = {
+        id: null,
+        name: null
+      };
+
+      state.projects = [];
+
+    },
+
+    ADD_PROJECT(state, payload) {
+      console.log('[STORE:MUTATIONS] add project');
+      state.projects.push({
+        id: payload.id,
+        name: 'New Project',
+        percent: 0,
+        items: []
+      });
+    },
+
+    UPDATE_PROJECT(state, {project, data}) {
+      console.log('[STORE:MUTATIONS] update project: ' + data.name);
+      project.name = data.name;
+    },
+
+    SET_PROJECTS(state, payload) {
+      console.log('[STORE:MUTATIONS] set projects');
+      state.projects = [];
+      payload.forEach( (value) => {
+        var tasks = [];
+        var completed = 0;
+        value.items.forEach((item) => {
+            var task = {
+              id: item.id,
+              content: item.content,
+              isCompleted: item.isCompleted
             }
-          ]
-    },
-    mutations: {
-        login_success(state, payload){
-            state.loginSuccess = true;
-            state.userName = payload.userName;
-            state.userPass = payload.userPass;
-        },
-        login_error(state, payload){
-            state.loginError = true;
-            state.userName = payload.userName;
-        },
-        ADD_PROJECT(state) {
-          console.log('add project mutation');
-          state.projects.push({
-            name: 'New Project',
-            items: []
-          });
-        },
-        ADD_ITEM(state, project) {
-          console.log('add item mutation');
-          project.items.push({
-            name: 'New Item'
-          });
+            tasks.push(task);
+            if(task.isCompleted) completed ++;
+        });
+
+        var project = {
+          id: value.id,
+          name: value.name,
+          percent: Math.round(completed * 100 /value.items.length),
+          items: tasks
         }
+        state.projects.push(project);
+      });
     },
-    actions: {
-        login({commit}, {user, password}) {
-            return new Promise((resolve, reject) => {
-                console.log("Accessing backend with user: '" + user);
-                api.getSecured(user, password)
-                    .then(response => {
-                        console.log("Response: '" + response.data + "' with Statuscode " + response.status);
-                        if(response.status == 200) {
-                            console.log("Login successful");
-                            // place the loginSuccess state into our vuex store
-                            commit('login_success', {
-                                userName: user,
-                                userPass: password
-                            });
-                        }
-                        resolve(response)
-                    })
-                    .catch(error => {
-                        console.log("Error: " + error);
-                        // place the loginError state into our vuex store
-                        commit('login_error', {
-                            userName: user
-                        });
-                        reject("Invalid credentials!")
-                    })
+
+    ADD_ITEM(state, {project, data}) {
+      console.log('[STORE:MUTATIONS] add item');
+      project.items.push({
+        id: data.id,
+        content: 'New Item',
+        isCompleted: false
+      });
+      const completed = project.items.filter(it => it.isCompleted).length;
+      project.percent = Math.round(completed * 100 /project.items.length);
+    },
+
+    UPDATE_ITEM(state, {item, data}) {
+      console.log('[STORE:MUTATIONS] update item: content=' + data.content);
+      item.content = data.content;
+      item.isCompleted = data.isCompleted;
+    },
+
+    UPDATE_PERCENT(state) {
+      console.log('[STORE:MUTATIONS] update all projects percent');
+      state.projects.forEach( (p)=>{
+        p.percent = Math.round(100 * p.items.filter(it => it.isCompleted).length / p.items.length);
+      });
+    },
+
+
+  },
+
+  actions: {
+
+    registerUser({commit}, {user, password, email}) {
+      console.log("[STORE:ACTION] register user: " + user + " email: " + email);
+      return new Promise((resolve, reject) => {
+        api.registerUser(user, password, email)
+          .then(response => {
+            console.log("Response: '" + response.data + "' with status: " + response.status);
+            commit('LOGIN', {
+              userId: response.data.id,
+              userName: user,
+            });
+            resolve(response)
+          })
+        .catch(error => {
+          console.log("Error: " + error);
+          reject(error.response.data)
+        })
+      })
+    },
+
+    deleteUser({commit}, {user, password}) {
+      console.log("[STORE:ACTION] delete user: '" + user);
+      return new Promise((resolve, reject) => {
+        api.deleteUser(user, password)
+          .then(response => {
+            console.log("Response: '" + response.data + "' with status: " + response.status);
+            commit('LOGOUT');
+            resolve(response)
+          })
+        .catch(error => {
+          console.log("Error: " + error);
+          reject(error.response.data)
+        })
+      })
+    },
+
+    login({commit}, {user, password}) {
+      console.log("[STORE:ACTION] login user: '" + user);
+      return new Promise((resolve, reject) => {
+        api.login(user, password)
+          .then(response => {
+            console.log("Response: '" + response.data + "' with status: " + response.status);
+            commit('LOGIN', {
+              userId: response.data.id,
+              userName: user
+            });
+
+        console.log("get projects");
+        api.getProjects()
+          .then(response => {
+              console.log("Response status: " + response.status);
+              commit('SET_PROJECTS', response.data);
+              resolve(response)
             })
-        },
-        addProject({commit}) {
-          console.log('add project action')
-          commit('ADD_PROJECT')
-        },
-        addItem({commit}, project) {
-          console.log('add item action')
-          commit('ADD_ITEM', project)
-        }
+            .catch(error => {
+              console.log("Error: " + error);
+              reject(error.response.data)
+            })
+
+            resolve(response)
+          })
+          .catch(error => {
+            console.log("Error: " + error);
+            reject(error.response.data)
+          })
+        })
     },
-    getters: {
-        isLoggedIn: state => state.loginSuccess,
-        hasLoginErrored: state => state.loginError,
-        getUserName: state => state.userName,
-        getUserPass: state => state.userPass,
-        getProjects: state => state.projects
-    }
+
+    logout({commit}) {
+      console.log("[STORE:ACTION] logout user");
+      return new Promise((resolve, reject) => {
+        api.logout()
+          .then(response => {
+            console.log("Response status: " + response.status);
+            commit('LOGOUT');
+            resolve(response)
+          })
+          .catch(error => {
+            console.log("Error: " + error);
+            reject(error.response.data)
+          })
+        })
+    },
+
+    getProjects({commit}) {
+      console.log('[STORE:ACTION] get projects');
+      api.getProjects()
+        .then(response => {
+            console.log("Response status: " + response.status);
+            commit('SET_PROJECTS', response.data);
+            resolve(response)
+          })
+          .catch(error => {
+            console.log("Error: " + error);
+            reject(error.response.data)
+          })
+    },
+
+    addProject({commit}) {
+      console.log('[STORE:ACTION] add project');
+      api.createProject('newProject')
+         .then(response => {
+           console.log("Response: '" + response.data + "' with status: " + response.status);
+           commit('ADD_PROJECT', response.data);
+         })
+         .catch(error => {
+           console.log("Error: " + error);
+         })
+    },
+
+    updateProject({commit}, { project, data} ) {
+      console.log('[STORE:ACTION] update project: id=' + data.id + ' name='+ data.name);
+      api.updateProject(data)
+        .then(response => {
+          console.log("Response: '" + response.data + "' with status: " + response.status);
+          commit('UPDATE_PROJECT', {project, data});
+        })
+        .catch(error => {
+          console.log("Error: " + error);
+        })
+    },
+
+    addItem({commit}, project) {
+      console.log('[STORE:ACTION] Add item: project.id=' + project.id);
+      api.addItem(project)
+        .then(response => {
+          console.log('Response: ' + response.data + ' with status: ' + response.status);
+          const data = response.data;
+          commit('ADD_ITEM', {project, data});
+          commit('UPDATE_PERCENT');
+        })
+        .catch(error => {
+          console.log("Error: " + error);
+        })
+    },
+
+    updateItem({commit}, { item, data} ) {
+      console.log('[STORE:ACTION] update item: id=' + data.id + ' content='+ data.content);
+      api.updateItem(data)
+        .then(response => {
+          console.log("Response: '" + response.data + "' with status: " + response.status);
+          commit('UPDATE_ITEM', {item, data});
+          commit('UPDATE_PERCENT');
+        })
+        .catch(error => {
+          console.log("Error: " + error);
+        })
+    },
+  },
+
+  getters: {
+    isLoggedIn: state => state.loginSuccess,
+    getUser: state => state.user,
+    getProjects: state => state.projects,
+    getUserId: state => state.user.userId,
+    getUserName: state => state.user.userName
+  }
 })

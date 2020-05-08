@@ -4,7 +4,7 @@ import Welcome from '@/components/Welcome'
 import Projects from '@/components/Projects'
 import Login from '@/components/Login'
 import Register from '@/components/Register'
-import Protected from '@/components/Protected'
+import User from '@/components/User'
 
 import store from './store'
 
@@ -14,12 +14,12 @@ const router = new Router({
     mode: 'history', // uris without hashes #, see https://router.vuejs.org/guide/essentials/history-mode.html#html5-history-mode
     routes: [
         { path: '/', component: Welcome },
-        { path: '/projects', component: Projects },
         { path: '/login', component: Login },
         { path: '/register', component: Register },
+        { path: '/user', component: User },
         {
-            path: '/protected',
-            component: Protected,
+            path: '/projects',
+            component: Projects,
             meta: {
                 requiresAuth: true
             }

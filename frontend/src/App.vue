@@ -1,13 +1,14 @@
 <template>
   <div id="app">
     <div id="nav">
-      <router-link to="/">Welcome</router-link> |
-      <router-link to="/projects">Projects</router-link> |
-      <router-link to="/login">Login</router-link> |
-      <router-link to="/register">Register</router-link> |
-      <router-link to="/protected">Protected</router-link>
+      <router-link to="/">Welcome |</router-link>
+      <router-link to="/projects"> Projects |</router-link>
+      <router-link v-if="!getIsLoggedIn" to="/login"> Login |</router-link>
+      <router-link v-if="!getIsLoggedIn" to="/register"> Register |</router-link>
+      <router-link v-if="getIsLoggedIn" to="/logout"><span @click="logout" > Logout |</span></router-link>
+      <router-link to="/user"> User |</router-link>
     </div>
-    <router-view :hellomsg="msg"></router-view>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -17,7 +18,27 @@ export default {
   name: 'app',
   data () {
     return {
-      msg: 'Welcome to your Vue.js powered Spring Boot App'
+
+    }
+  },
+
+  computed: {
+    getIsLoggedIn() {
+      return this.$store.getters.isLoggedIn;
+    }
+  },
+
+  methods: {
+    logout() {
+      console.log("logout");
+      this.$store.dispatch('logout')
+        .then(() => {
+          console.log("logout success");
+        })
+        .catch(error => {
+          console.log("logout error");
+          this.errorsList = error.errors;
+        });
     }
   }
 }
