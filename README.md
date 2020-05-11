@@ -1,4 +1,4 @@
-# Personal time and progress bar wrapper
+# Personal time and progress bar front
 
 ---
 
