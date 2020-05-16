@@ -1,8 +1,8 @@
 <template>
   <div class="mx-lg">
-    <li class="list-group-item list-group-item-light">
+    <li class="list-group-item list-group-item-light row mx-auto">
       <div class="row mx-auto" >
-        <div class="col-auto folder" @click="toggle" > {{getTextIcon}} </div>
+        <div class="col-auto folder " @click="toggle" > {{getTextIcon}} </div>
         <div class="col-auto">
           <span @click="editing=true" v-show="!editing">
             {{model.name}}
@@ -16,11 +16,15 @@
           </span>
         </div>
         <div class="col-lg progress">
-          <div class="progress-bar" role="progressbar" v-bind:style="{width: model.percent + '%'}" aria-valuemin="0" aria-valuemax="100">{{model.percent}} %</div>
+          <div class="progress-bar align-bottom" role="progressbar" v-bind:style="{width: model.percent + '%'}" aria-valuemin="0" aria-valuemax="100">{{model.percent}} %</div>
         </div>
+        <button type="button" class="close" aria-label="Close" @click="deleteProject(model)">&times;</button>
       </div>
       <ul class="list-group" v-show="open" :class="{'open': open}">
-        <item v-for="(it, index) in model.items" :model="it" v-bind:key="index"></item>
+        <span v-for="(it, index) in model.items" class="row">
+          <item  class="col item" :model="it" v-bind:parent="model"></item>
+          <button type="button" class="close float-right float-top col-0 item" aria-label="Close" @click="deleteItem(it, model, index)">&times;</button>
+        </span>
         <li @click="addItem(model)" class="list-group-item list-group-item-dark text-left">add new task</li>
       </ul>
     </li>
@@ -31,8 +35,9 @@
 import Item from './Item.vue';
 
 export default {
-  name: 'project',
-  props: ['model'],
+  props: {
+    model: Object
+  },
   data () {
     return {
       editing: false,
@@ -62,6 +67,11 @@ export default {
       this.$store.dispatch('addItem', project)
     },
 
+    deleteItem: function(item, project, index) {
+      console.log('[UI:Project] delete item: id=' + item.id + ' parent.id=' + parent.id + ' index=' + index);
+      this.$store.dispatch('deleteItem', {item, project, index})
+    },
+
     updateName: function(project, projectName) {
       console.log('[UI:Project] update name: name=' + projectName);
       var data = {
@@ -69,7 +79,13 @@ export default {
         name: projectName
       };
       this.$store.dispatch('updateProject', {project, data});
-    }
+    },
+
+    deleteProject: function(project) {
+      console.log('[UI:Project] delete project.');
+      this.$store.dispatch('deleteProject', project)
+    },
+
   },
   components: {
     Item

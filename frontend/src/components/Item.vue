@@ -3,35 +3,44 @@
     <li class="list-group-item text-left" v-bind:class="{
                 'list-group-item-success': model.isCompleted,
                 'list-group-item-primary': !model.isCompleted}">
-      <div class="row form-check mx-auto">
-        <input type="checkbox" class="form-check-input" v-model="model.isCompleted" @change="check(model, $event.target.checked)">
-        <div class="col-auto">
-          <span @click="editing=true" v-show="!editing">
-            {{model.content}}
-          </span>
-          <span v-show="editing" >
-            <input :value="model.content"
-              @change="updateContent(model, $event.target.value)"
-              @keyup.enter="editing=false"
-              type="text"
-              class="form-control" >
-          </span>
+      <span class="row mx-auto container">
+        <input type="checkbox" class="col-1" v-model="model.isCompleted" @change="check(model, $event.target.checked)" :value="123">
+        <span @click="editing=true" class="col">{{model.content}}</span>
+
+        <div class="col-lg progress">
+          <div class="progress-bar align-bottom" role="progressbar" v-bind:style="{width: getPercent + '%'}" aria-valuemin="0" aria-valuemax="100">{{getPercent}} %</div>
         </div>
-      </div>
+      </span>
+      <item-editor v-show="editing" v-bind:model='model' v-bind:parent='parent' @update="onItemUpdateOk" @cancel="onItemUpdateCancel"></item-editor>
     </li>
   </div>
 </template>
 
 <script>
+import ItemEditor from './ItemEditor.vue';
 
 export default {
-  content: 'item',
-  props: ['model'],
+  props: {
+    model: Object,
+    parent: Object
+  },
   data () {
     return {
       editing: false
     }
   },
+
+  computed: {
+    getPercent: function() {
+      var total = this.model.finish-this.model.start;
+      var delta = this.model.finish-Date.now();
+
+      var percent = Math.round(100* (total-delta)/total);
+      console.log('percent=' + percent);
+      return percent;
+    }
+  },
+
   methods: {
     updateContent: function(item, itemContent) {
       console.log('[UI:Item] update content: content=' + itemContent);
@@ -46,7 +55,26 @@ export default {
       data.isCompleted = flag;
 
       this.$store.dispatch('updateItem', {item, data});
-    }
+    },
+
+    deleteItem: function(item, parent) {
+      console.log('[UI:Item] delete item.');
+      this.$store.dispatch('deleteItem', {item, parent})
+    },
+
+    onItemUpdateOk: function(msg) {
+      console.log('[UI:Item] on item update ok: msg=' + msg);
+      this.editing=false;
+    },
+
+    onItemUpdateCancel: function(msg) {
+      console.log('[UI:Item] on item update cancel.');
+      this.editing=false;
+    },
+
+  },
+  components: {
+    ItemEditor
   }
 }
 

@@ -13,7 +13,6 @@
 import Project from './Project.vue';
 
 export default {
-  name: 'projects',
   data () {
     return {
     }
@@ -27,8 +26,9 @@ export default {
     addProject: function() {
       console.log('add new project!');
       this.$store.dispatch('addProject')
-    }
+    },
   },
+
   components: {
     Project
   }

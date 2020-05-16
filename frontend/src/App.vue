@@ -40,7 +40,7 @@ export default {
           this.errorsList = error.errors;
         });
     }
-  }
+  },
 }
 </script>
 

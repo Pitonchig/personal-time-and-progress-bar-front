@@ -28,6 +28,19 @@ export default new Vuex.Store({
     projects: [ ]
   },
 
+  data () {
+    return {
+      timer: ''
+    }
+  },
+
+  methods: {
+    poll: function() {
+      console.log('poll!');
+
+    }
+  },
+
   mutations: {
     LOGIN(state, payload){
       console.log('[STORE:MUTATIONS] login');
@@ -67,8 +80,15 @@ export default new Vuex.Store({
       project.name = data.name;
     },
 
+    DELETE_PROJECT(state, project) {
+      console.log('[STORE:MUTATIONS] delete project: ' + project.id);
+    const i = state.projects.map(item => item.id).indexOf(project.id);
+    state.projects.splice(i, 1);
+    },
+
     SET_PROJECTS(state, payload) {
       console.log('[STORE:MUTATIONS] set projects');
+
       state.projects = [];
       payload.forEach( (value) => {
         var tasks = [];
@@ -77,8 +97,13 @@ export default new Vuex.Store({
             var task = {
               id: item.id,
               content: item.content,
-              isCompleted: item.isCompleted
+              isCompleted: item.isCompleted,
+              start: new Date(item.start),
+              finish: new Date(item.finish)
             }
+            console.log('[STORE:MUTATIONS] start=' + item.start);
+            console.log('[STORE:MUTATIONS] dt=' + task.start);
+            console.log('---');
             tasks.push(task);
             if(task.isCompleted) completed ++;
         });
@@ -107,7 +132,14 @@ export default new Vuex.Store({
     UPDATE_ITEM(state, {item, data}) {
       console.log('[STORE:MUTATIONS] update item: content=' + data.content);
       item.content = data.content;
+      item.start = data.start;
+      item.finish = data.finish;
       item.isCompleted = data.isCompleted;
+    },
+
+    DELETE_ITEM(state, {item, project, index}) {
+        console.log('[STORE:MUTATIONS] delete item: index=' + index);
+        project.items.splice(index, 1);
     },
 
     UPDATE_PERCENT(state) {
@@ -157,8 +189,14 @@ export default new Vuex.Store({
       })
     },
 
-    login({commit}, {user, password}) {
+    login({commit, dispatch}, {user, password}) {
       console.log("[STORE:ACTION] login user: '" + user);
+      console.log(this.timer);
+      this.timer = setInterval(function() {
+        dispatch('getProjects');
+      }, 10000);
+      console.log(this.timer);
+
       return new Promise((resolve, reject) => {
         api.login(user, password)
           .then(response => {
@@ -191,6 +229,8 @@ export default new Vuex.Store({
 
     logout({commit}) {
       console.log("[STORE:ACTION] logout user");
+      clearInterval(this.timer);
+
       return new Promise((resolve, reject) => {
         api.logout()
           .then(response => {
@@ -211,11 +251,11 @@ export default new Vuex.Store({
         .then(response => {
             console.log("Response status: " + response.status);
             commit('SET_PROJECTS', response.data);
-            resolve(response)
+            //resolve(response)
           })
           .catch(error => {
             console.log("Error: " + error);
-            reject(error.response.data)
+            //reject(error.response.data)
           })
     },
 
@@ -243,6 +283,18 @@ export default new Vuex.Store({
         })
     },
 
+    deleteProject({commit}, project ) {
+      console.log('[STORE:ACTION] delete project: id=' + project.id);
+      api.deleteProject(project)
+        .then(response => {
+          console.log("Response: with status: " + response.status);
+          commit('DELETE_PROJECT', project);
+        })
+        .catch(error => {
+          console.log("Error: " + error);
+        })
+    },
+
     addItem({commit}, project) {
       console.log('[STORE:ACTION] Add item: project.id=' + project.id);
       api.addItem(project)
@@ -264,6 +316,18 @@ export default new Vuex.Store({
           console.log("Response: '" + response.data + "' with status: " + response.status);
           commit('UPDATE_ITEM', {item, data});
           commit('UPDATE_PERCENT');
+        })
+        .catch(error => {
+          console.log("Error: " + error);
+        })
+    },
+
+    deleteItem({commit}, {item, project, index} ) {
+      console.log('[STORE:ACTION] delete item: id=' + item.id);
+      api.deleteItem(item.id)
+        .then(response => {
+          console.log("Response: with status: " + response.status);
+          commit('DELETE_ITEM', {item, project, index} );
         })
         .catch(error => {
           console.log("Error: " + error);

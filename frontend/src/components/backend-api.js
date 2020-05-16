@@ -62,6 +62,11 @@ export default {
       });
   },
 
+  deleteProject(data) {
+    console.log("[API] send deleteProject request: id=" + data.id)
+    return AXIOS.delete('projects/' + data.id);
+  },
+
   addItem(project) {
     console.log("[API] send addItem request: project.id=" + project.id);
     return AXIOS.post('projects/' + project.id + '/items', {
@@ -73,8 +78,15 @@ export default {
     console.log("[API] send updateItem request: id=" + data.id + ' content=' + data.content + ' isCompleted=' + data.isCompleted )
       return AXIOS.put('projects/items/' + data.id, {
         content: data.content,
-        isCompleted: data.isCompleted
+        isCompleted: data.isCompleted,
+        start: data.start.toISOString(),
+        finish: data.finish.toJSON()
       });
+  },
+
+  deleteItem(id) {
+    console.log("[API] send deleteItem request: id=" + id)
+    return AXIOS.delete('projects/items/' + id);
   },
 
 }
