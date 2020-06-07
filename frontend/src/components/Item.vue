@@ -6,13 +6,13 @@
                 'list-group-item-danger': !model.isCompleted && getPercent==100 }">
       <span class="row mx-auto container">
         <input type="checkbox" class="col-1" v-model="model.isCompleted" @change="check(model, $event.target.checked)" :value="123">
-        <span @click="editing=true" class="col">{{model.content}}</span>
+        <span @click="updateEditorComponent(model)" class="col">{{model.content}}</span>
 
         <div class="col-lg progress">
           <div class="progress-bar align-bottom" role="progressbar" v-bind:style="{width: getPercent + '%'}" aria-valuemin="0" aria-valuemax="100">{{getPercent}} %</div>
         </div>
       </span>
-      <item-editor v-show="editing" v-bind:model='model' v-bind:parent='parent' @update="onItemUpdateOk" @cancel="onItemUpdateCancel"></item-editor>
+      <item-editor v-show="editing" ref="refItemEditor" v-bind:parent='parent' @update="onItemUpdateOk" @cancel="onItemUpdateCancel"></item-editor>
     </li>
   </div>
 </template>
@@ -25,7 +25,8 @@ export default {
     model: Object,
     parent: Object
   },
-  data () {
+
+  data: function() {
     return {
       editing: false
     }
@@ -48,6 +49,12 @@ export default {
   },
 
   methods: {
+    updateEditorComponent: function(model) {
+      console.log('[UI:Item] setItemEditor model: editing=' + this.$data.editing);
+      this.$data.editing = !this.$data.editing ;
+      this.$refs.refItemEditor.setModel(model);
+    },
+
     updateContent: function(item, itemContent) {
       console.log('[UI:Item] update content: content=' + itemContent);
       var data = item;

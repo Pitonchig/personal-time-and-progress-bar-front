@@ -75,12 +75,15 @@ export default {
   },
 
   updateItem(data) {
-    console.log("[API] send updateItem request: id=" + data.id + ' content=' + data.content + ' isCompleted=' + data.isCompleted )
+    console.log("[API] send updateItem request: id=" + data.id + ' content=' + data.content + ' isCompleted=' + data.isCompleted  + ' start=' + data.start + ' finish=' + data.finish);
+    var isoStartDateTime = new Date(data.start.getTime() - (data.start.getTimezoneOffset() * 60000)).toISOString();
+    var isoFinishDateTime = new Date(data.finish.getTime() - (data.finish.getTimezoneOffset() * 60000)).toISOString();
+
       return AXIOS.put('projects/items/' + data.id, {
         content: data.content,
         isCompleted: data.isCompleted,
-        start: data.start.toISOString(),
-        finish: data.finish.toJSON()
+        start: isoStartDateTime,
+        finish: isoFinishDateTime
       });
   },
 
