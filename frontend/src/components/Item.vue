@@ -2,7 +2,8 @@
   <div>
     <li class="list-group-item text-left" v-bind:class="{
                 'list-group-item-success': model.isCompleted,
-                'list-group-item-primary': !model.isCompleted}">
+                'list-group-item-primary': !model.isCompleted && getPercent <100,
+                'list-group-item-danger': !model.isCompleted && getPercent==100 }">
       <span class="row mx-auto container">
         <input type="checkbox" class="col-1" v-model="model.isCompleted" @change="check(model, $event.target.checked)" :value="123">
         <span @click="editing=true" class="col">{{model.content}}</span>
@@ -33,9 +34,14 @@ export default {
   computed: {
     getPercent: function() {
       var total = this.model.finish-this.model.start;
-      var delta = this.model.finish-Date.now();
+      if(total < 0 ) return 0;
 
+      var delta = this.model.finish-Date.now();
       var percent = Math.round(100* (total-delta)/total);
+
+      if(percent < 0) percent=0;
+      if(percent > 100) percent=100;
+
       console.log('percent=' + percent);
       return percent;
     }
