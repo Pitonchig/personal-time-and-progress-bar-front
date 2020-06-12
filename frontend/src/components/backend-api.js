@@ -13,6 +13,15 @@ const AXIOS = axios.create({
 
 export default {
 
+  convertDateTimeToISO(dt) {
+    console.log('convert to UTC: ' + dt);
+    var MS = 1000 * 60; //ms in one minute
+    var dtUTC = new Date(dt.getTime() + (dt.getTimezoneOffset() * MS)).toISOString();
+    console.log('converted: ' + dtUTC);
+
+    return dtUTC;
+  },
+
   registerUser(userName, userPassword, userEmail) {
     console.log("[API] send registerUser request: " + userName)
     return AXIOS.post('users', {
@@ -67,24 +76,23 @@ export default {
     return AXIOS.delete('projects/' + data.id);
   },
 
-  addItem(project) {
-    console.log("[API] send addItem request: project.id=" + project.id);
-    return AXIOS.post('projects/' + project.id + '/items', {
-      content: 'task'
+  addItem(projectId, task) {
+    console.log("[API] send addItem request: projectId=" + projectId);
+    return AXIOS.post('projects/' + projectId + '/items', {
+      content: task.content,
+      start: task.start,
+      finish: task.finish
     });
   },
 
   updateItem(data) {
     console.log("[API] send updateItem request: id=" + data.id + ' content=' + data.content + ' isCompleted=' + data.isCompleted  + ' start=' + data.start + ' finish=' + data.finish);
-    var isoStartDateTime = new Date(data.start.getTime() - (data.start.getTimezoneOffset() * 60000)).toISOString();
-    var isoFinishDateTime = new Date(data.finish.getTime() - (data.finish.getTimezoneOffset() * 60000)).toISOString();
-
-      return AXIOS.put('projects/items/' + data.id, {
-        content: data.content,
-        isCompleted: data.isCompleted,
-        start: isoStartDateTime,
-        finish: isoFinishDateTime
-      });
+    return AXIOS.put('projects/items/' + data.id, {
+      content: data.content,
+      isCompleted: data.isCompleted,
+      start: data.start,
+      finish: data.finish
+    });
   },
 
   deleteItem(id) {

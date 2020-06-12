@@ -47,52 +47,30 @@ export default {
   },
 
   methods: {
-
-    calcStartTime: function() {
-      console.log('startTime');
-      return this.formatTime(this.$data.model.start)
-    },
-    calcFinishTime() {
-      console.log('finishTime');
-      return this.formatTime(this.$data.model.finish);
-    },
-    calcStartDate() {
-      console.log('startDate');
-      return this.formatDate(this.$data.model.start);
-    },
-    calcFinishDate() {
-      console.log('finishDate');
-      return this.formatDate(this.$data.model.finish);
-    },
-
-
     setModel: function(data) {
        console.log('[UI:ItemEditor] setModel: data=' + data);
        this.$data.model = data;
 
        this.$refs.content.value = this.$data.model.content;
-       this.$refs.startTime.value = this.calcStartTime();
-       this.$refs.startDate.value = this.calcStartDate();
-       this.$refs.finishTime.value = this.calcFinishTime();
-       this.$refs.finishDate.value = this.calcFinishDate();
+       this.$refs.startTime.value = this.formatTime(this.$data.model.start);
+       this.$refs.startDate.value = this.formatDate(this.$data.model.start);
+       this.$refs.finishTime.value = this.formatTime(this.$data.model.finish);
+       this.$refs.finishDate.value = this.formatDate(this.$data.model.finish);
     },
 
     formatDate: function(date) {
       console.log('format date=' + date);
       var year = 1900 + date.getYear();
-      console.log('year=' + year);
 
       var month = 1 + date.getMonth();
       if(month<10) {
         month = '0' + month;
       }
-      console.log('month=' + month);
 
       var day = date.getDate();
       if(day<10) {
         day = '0' + day;
       }
-      console.log('day=' + day);
 
       console.log('formatted=' + year + '-' + month + '-' + day);
       return year + '-' + month + '-' + day;
@@ -124,12 +102,8 @@ export default {
 
     onUpdate: function() {
       console.log('[UI:ItemEditor] update');
-      console.log('[UI:ItemEditor] start = ' + this.$refs.startDate.value  + ' ' + this.$refs.startTime.value);
       const start = new Date(this.$refs.startDate.value + 'T' + this.$refs.startTime.value);
-      console.log('[UI:ItemEditor] start dt=' + start);
-
       const finish = new Date(this.$refs.finishDate.value + 'T' + this.$refs.finishTime.value);
-      console.log('[UI:ItemEditor] finish dt=' + finish);
 
       var item = this.$data.model;
       var data = {
@@ -137,7 +111,7 @@ export default {
         content: this.$refs.content.value,
         start: start,
         finish: finish,
-        isComplete: item.isComplete,
+        isCompleted: item.isCompleted,
       };
       this.$emit('update', "update");
       this.$store.dispatch('updateItem', { item, data});

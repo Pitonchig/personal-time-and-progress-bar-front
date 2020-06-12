@@ -4,20 +4,6 @@ import api from './components/backend-api'
 
 Vue.use(Vuex);
 
-//    projects: [
-//      {
-//        id:
-//        name: "Project-1",
-//        percent:
-//        items: [
-//          {
-//            name: "Item1-1",
-//            isCompleted: false
-//          }
-//        ]
-//      }
-//    ]
-
 export default new Vuex.Store({
   state: {
     loginSuccess: false,
@@ -31,13 +17,6 @@ export default new Vuex.Store({
   data () {
     return {
       timer: ''
-    }
-  },
-
-  methods: {
-    poll: function() {
-      console.log('poll!');
-
     }
   },
 
@@ -60,9 +39,7 @@ export default new Vuex.Store({
         id: null,
         name: null
       };
-
       state.projects = [];
-
     },
 
     ADD_PROJECT(state, payload) {
@@ -82,8 +59,8 @@ export default new Vuex.Store({
 
     DELETE_PROJECT(state, project) {
       console.log('[STORE:MUTATIONS] delete project: ' + project.id);
-    const i = state.projects.map(item => item.id).indexOf(project.id);
-    state.projects.splice(i, 1);
+      const i = state.projects.map(item => item.id).indexOf(project.id);
+      state.projects.splice(i, 1);
     },
 
     SET_PROJECTS(state, payload) {
@@ -94,24 +71,27 @@ export default new Vuex.Store({
         var tasks = [];
         var completed = 0;
         value.items.forEach((item) => {
+            const MS = 1000 * 60;
+            const timeZoneOffset = new Date().getTimezoneOffset() * MS;
+            var start = new Date(new Date(item.start).getTime() - timeZoneOffset);
+            var finish = new Date(new Date(item.finish).getTime() - timeZoneOffset);
+
             var task = {
               id: item.id,
               content: item.content,
               isCompleted: item.isCompleted,
-              start: new Date(item.start),
-              finish: new Date(item.finish)
+              start: start,
+              finish: finish
             }
-            console.log('[STORE:MUTATIONS] start=' + item.start);
-            console.log('[STORE:MUTATIONS] dt=' + task.start);
-            console.log('---');
             tasks.push(task);
             if(task.isCompleted) completed ++;
         });
 
+        var percent = (value.items.length==0) ? 0 : Math.round(completed * 100 /value.items.length);
         var project = {
           id: value.id,
           name: value.name,
-          percent: Math.round(completed * 100 /value.items.length),
+          percent: percent,
           items: tasks
         }
         state.projects.push(project);
@@ -122,11 +102,13 @@ export default new Vuex.Store({
       console.log('[STORE:MUTATIONS] add item');
       project.items.push({
         id: data.id,
-        content: 'New Item',
-        isCompleted: false
+        content: data.content,
+        start: data.start,
+        finish: data.finish,
+        isCompleted: data.isCompleted
       });
       const completed = project.items.filter(it => it.isCompleted).length;
-      project.percent = Math.round(completed * 100 /project.items.length);
+      project.percent = (project.items.length==0) ? 0 : Math.round(completed * 100 /project.items.length);;
     },
 
     UPDATE_ITEM(state, {item, data}) {
@@ -145,11 +127,9 @@ export default new Vuex.Store({
     UPDATE_PERCENT(state) {
       console.log('[STORE:MUTATIONS] update all projects percent');
       state.projects.forEach( (p)=>{
-        p.percent = Math.round(100 * p.items.filter(it => it.isCompleted).length / p.items.length);
+        p.percent = (p.items.length==0) ? 0 : Math.round(100 * p.items.filter(it => it.isCompleted).length / p.items.length);
       });
     },
-
-
   },
 
   actions: {
@@ -194,7 +174,7 @@ export default new Vuex.Store({
       console.log(this.timer);
       this.timer = setInterval(function() {
         dispatch('getProjects');
-      }, 10000);
+      }, 60*1000);
       console.log(this.timer);
 
       return new Promise((resolve, reject) => {
@@ -251,11 +231,9 @@ export default new Vuex.Store({
         .then(response => {
             console.log("Response status: " + response.status);
             commit('SET_PROJECTS', response.data);
-            //resolve(response)
           })
           .catch(error => {
             console.log("Error: " + error);
-            //reject(error.response.data)
           })
     },
 
@@ -297,10 +275,23 @@ export default new Vuex.Store({
 
     addItem({commit}, project) {
       console.log('[STORE:ACTION] Add item: project.id=' + project.id);
-      api.addItem(project)
+
+      var finishDateTime = new Date();
+      finishDateTime.setMinutes(59);
+      finishDateTime.setHours(23);
+
+      var data = {
+        id: '',
+        content: 'task content',
+        start: new Date(),
+        finish: finishDateTime,
+        isCompleted: false
+      }
+
+      api.addItem(project.id, data)
         .then(response => {
           console.log('Response: ' + response.data + ' with status: ' + response.status);
-          const data = response.data;
+          data.id = response.data.id;
           commit('ADD_ITEM', {project, data});
           commit('UPDATE_PERCENT');
         })

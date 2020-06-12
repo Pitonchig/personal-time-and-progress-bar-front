@@ -24,7 +24,7 @@ export default {
   },
   methods: {
     addProject: function() {
-      console.log('add new project!');
+      console.log('[UI:Projects] add new project');
       this.$store.dispatch('addProject')
     },
   },
