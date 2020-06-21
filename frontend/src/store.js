@@ -9,7 +9,9 @@ export default new Vuex.Store({
     loginSuccess: false,
     user: {
       id: null,
-      name: null
+      name: null,
+      email: null,
+      isTodoistLinked: false
     },
     projects: [ ]
   },
@@ -26,8 +28,10 @@ export default new Vuex.Store({
       state.loginSuccess = true;
 
       state.user = {
-        id: payload.userId,
-        name: payload.userName
+        id: payload.id,
+        name: payload.name,
+        email: payload.email,
+        isTodoistLinked: payload.todoistLinked
       };
     },
 
@@ -37,9 +41,16 @@ export default new Vuex.Store({
 
       state.user = {
         id: null,
-        name: null
+        name: null,
+        email: null,
+        isTodoistLinked: false
       };
       state.projects = [];
+    },
+
+    UPDATE_TODOIST_TOKEN(state, payload){
+      console.log('[STORE:MUTATIONS] update token status: flag=' + payload.todoistLinked);
+      state.user.isTodoistLinked = payload.todoistLinked;
     },
 
     ADD_PROJECT(state, payload) {
@@ -181,10 +192,7 @@ export default new Vuex.Store({
         api.login(user, password)
           .then(response => {
             console.log("Response: '" + response.data + "' with status: " + response.status);
-            commit('LOGIN', {
-              userId: response.data.id,
-              userName: user
-            });
+            commit('LOGIN', response.data);
 
         console.log("get projects");
         api.getProjects()
@@ -319,6 +327,18 @@ export default new Vuex.Store({
         .then(response => {
           console.log("Response: with status: " + response.status);
           commit('DELETE_ITEM', {item, project, index} );
+        })
+        .catch(error => {
+          console.log("Error: " + error);
+        })
+    },
+
+    updateTodoistToken({commit}, { token} ) {
+      console.log('[STORE:ACTION] updateTodoistToken: token=' + token);
+      api.updateTodoistToken(token)
+        .then(response => {
+          console.log("Response: '" + response.data + "' with status: " + response.status);
+          commit('UPDATE_TODOIST_TOKEN', response.data);
         })
         .catch(error => {
           console.log("Error: " + error);

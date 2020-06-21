@@ -100,6 +100,12 @@ export default {
     return AXIOS.delete('projects/items/' + id);
   },
 
+  updateTodoistToken(token) {
+    console.log("[API] send updateTodoistToken request: token=" + token);
+    return AXIOS.post('users/tokens/', {
+      token: token
+    });
+  },
 }
 
 

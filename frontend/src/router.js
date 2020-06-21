@@ -11,7 +11,7 @@ import store from './store'
 Vue.use(Router);
 
 const router = new Router({
-    mode: 'history', // uris without hashes #, see https://router.vuejs.org/guide/essentials/history-mode.html#html5-history-mode
+    mode: 'history',
     routes: [
         { path: '/', component: Welcome },
         { path: '/login', component: Login },

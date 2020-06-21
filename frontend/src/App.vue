@@ -1,12 +1,12 @@
 <template>
   <div id="app">
     <div id="nav">
-      <router-link to="/">Welcome |</router-link>
+      <router-link to="/">| Welcome |</router-link>
       <router-link to="/projects"> Projects |</router-link>
       <router-link v-if="!getIsLoggedIn" to="/login"> Login |</router-link>
       <router-link v-if="!getIsLoggedIn" to="/register"> Register |</router-link>
-      <router-link v-if="getIsLoggedIn" to="/logout"><span @click="logout" > Logout |</span></router-link>
-      <router-link to="/user"> User |</router-link>
+      <router-link v-if=" getIsLoggedIn" to="/user"> User |</router-link>
+      <router-link v-if=" getIsLoggedIn" to="/logout"><span @click="logout" > Logout |</span></router-link>
     </div>
     <router-view></router-view>
   </div>
