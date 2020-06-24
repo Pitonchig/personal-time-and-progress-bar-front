@@ -31,6 +31,9 @@
                     'badge-danger': !getUserInfo.isTodoistLinked,
                 }" > Todoist </span>
         </div>
+        <div class="mb-3">
+                <button type="button" class="btn btn-primary mr-2 mb-2 mb-sm-0" @click="onSync()">Sync</button>
+        </div>
         <div v-show="isTodoistServiceEditing" class="mb-3">
             <span class="mr-2 d-block d-sm-inline-block mb-2 mb-sm-0 text-primary">Todoist token:</span>
             <input type="text" class="col-5 mr-2 mb-2 mb-sm-0" ref="token">
@@ -81,6 +84,12 @@ export default {
         this.$data.isTodoistServiceEditing = false;
     },
 
+    onSync: function() {
+        console.log('[UI:User] sync tasks');
+        var from = true;
+        var to = true;
+        this.$store.dispatch('syncTasks', {from, to});
+    },
   }
 
 }

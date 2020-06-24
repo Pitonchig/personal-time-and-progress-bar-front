@@ -102,10 +102,19 @@ export default {
 
   updateTodoistToken(token) {
     console.log("[API] send updateTodoistToken request: token=" + token);
-    return AXIOS.post('users/tokens/', {
+    return AXIOS.put('users/tokens/', {
       token: token
     });
   },
+
+  syncTasks(from, to) {
+    console.log("[API] send syncTasks request");
+    return AXIOS.put('users/services', {
+      from: from,
+      to: to
+    });
+  },
+
 }
 
 

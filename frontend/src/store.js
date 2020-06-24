@@ -344,6 +344,17 @@ export default new Vuex.Store({
           console.log("Error: " + error);
         })
     },
+
+    syncTasks({commit}, {from, to}) {
+        console.log('[STORE:ACTION] syncTasks: from=' + from + ' to=' + to);
+        api.syncTasks(from, to)
+            .then(response => {
+                console.log("Response: '" + response.data + "' with status: " + response.status);
+            })
+            .catch(error => {
+                console.log("Error: " + error);
+            })
+    }
   },
 
   getters: {
