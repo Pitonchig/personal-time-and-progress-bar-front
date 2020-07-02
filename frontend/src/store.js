@@ -151,10 +151,7 @@ export default new Vuex.Store({
         api.registerUser(user, password, email)
           .then(response => {
             console.log("Response: '" + response.data + "' with status: " + response.status);
-            commit('LOGIN', {
-              userId: response.data.id,
-              userName: user,
-            });
+            commit('LOGIN', response.data);
             resolve(response)
           })
         .catch(error => {

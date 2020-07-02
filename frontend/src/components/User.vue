@@ -32,6 +32,16 @@
                 }" > Todoist </span>
         </div>
         <div class="mb-3">
+          <span class="mr-3 col-1">
+            <input type="checkbox" class="form-check-input" ref="fromCheck" id="fromCheck">
+            <label class="form-check-label text-primary" for="fromCheck">From Todoist</label>
+          </span>
+          <span class="mr-3 col-2">
+            <input type="checkbox" class="form-check-input" ref="toCheck" id="toCheck">
+            <label class="form-check-label text-primary" for="toCheck">To Todoist</label>
+          </span>
+        </div>
+        <div class="mb-3">
                 <button type="button" class="btn btn-primary mr-2 mb-2 mb-sm-0" @click="onSync()">Sync</button>
         </div>
         <div v-show="isTodoistServiceEditing" class="mb-3">
@@ -86,8 +96,8 @@ export default {
 
     onSync: function() {
         console.log('[UI:User] sync tasks');
-        var from = true;
-        var to = true;
+        var from = this.$refs.fromCheck.checked;
+        var to = this.$refs.toCheck.checked;
         this.$store.dispatch('syncTasks', {from, to});
     },
   }
