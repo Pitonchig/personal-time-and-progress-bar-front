@@ -57,9 +57,9 @@ export default new Vuex.Store({
       console.log('[STORE:MUTATIONS] add project');
       state.projects.push({
         id: payload.id,
-        name: 'New Project',
-        percent: 0,
-        items: []
+        name: payload.name,
+        percent: payload.percent,
+        items: payload.items
       });
     },
 
@@ -76,16 +76,18 @@ export default new Vuex.Store({
 
     SET_PROJECTS(state, payload) {
       console.log('[STORE:MUTATIONS] set projects');
-
+      console.log('payload = ' + payload);
       state.projects = [];
       payload.forEach( (value) => {
         var tasks = [];
         var completed = 0;
         value.items.forEach((item) => {
-            const MS = 1000 * 60;
-            const timeZoneOffset = new Date().getTimezoneOffset() * MS;
-            var start = new Date(new Date(item.start).getTime() - timeZoneOffset);
-            var finish = new Date(new Date(item.finish).getTime() - timeZoneOffset);
+//            const MS = 1000 * 60;
+//            const timeZoneOffset = new Date().getTimezoneOffset() * MS;
+//            var start = new Date(new Date(item.start).getTime() - timeZoneOffset);
+//            var finish = new Date(new Date(item.finish).getTime() - timeZoneOffset);
+            var start = new Date(item.start);
+            var finish = new Date(item.finish);
 
             var task = {
               id: item.id,
@@ -124,6 +126,9 @@ export default new Vuex.Store({
 
     UPDATE_ITEM(state, {item, data}) {
       console.log('[STORE:MUTATIONS] update item: content=' + data.content);
+
+      console.log('[STORE:MUTATIONS] start=' + data.start);
+      console.log('[STORE:MUTATIONS] start=' + data.finish);
       item.content = data.content;
       item.start = data.start;
       item.finish = data.finish;
@@ -179,35 +184,23 @@ export default new Vuex.Store({
 
     login({commit, dispatch}, {user, password}) {
       console.log("[STORE:ACTION] login user: '" + user);
-      console.log(this.timer);
-      this.timer = setInterval(function() {
-        dispatch('getProjects');
-      }, 60*1000);
-      console.log(this.timer);
+
+//      this.timer = setInterval(function() {
+//        dispatch('getProjects');
+//      }, 60*1000);
+
 
       return new Promise((resolve, reject) => {
         api.login(user, password)
           .then(response => {
             console.log("Response: '" + response.data + "' with status: " + response.status);
             commit('LOGIN', response.data);
-
-        console.log("get projects");
-        api.getProjects()
-          .then(response => {
-              console.log("Response status: " + response.status);
-              commit('SET_PROJECTS', response.data);
-              resolve(response)
-            })
-            .catch(error => {
-              console.log("Error: " + error);
-              reject(error.response.data)
-            })
-
-            resolve(response)
+            dispatch('getProjects');
+            resolve(response);
           })
           .catch(error => {
             console.log("Error: " + error);
-            reject(error.response.data)
+            reject(error.response.data);
           })
         })
     },
@@ -242,40 +235,38 @@ export default new Vuex.Store({
           })
     },
 
+    saveProjects({commit}) {
+      console.log('[STORE:ACTION] save projects');
+      api.saveProjects(this.state.projects)
+        .then(response => {
+            console.log("Response status: " + response.status);
+            commit('SET_PROJECTS', response.data);
+          })
+          .catch(error => {
+            console.log("Error: " + error);
+          })
+    },
+
+
     addProject({commit}) {
       console.log('[STORE:ACTION] add project');
-      api.createProject('newProject')
-         .then(response => {
-           console.log("Response: '" + response.data + "' with status: " + response.status);
-           commit('ADD_PROJECT', response.data);
-         })
-         .catch(error => {
-           console.log("Error: " + error);
-         })
+      var project = {
+        id: '',
+        name: 'New Project',
+        percent: 0,
+        items: []
+      }
+      commit('ADD_PROJECT', project);
     },
 
     updateProject({commit}, { project, data} ) {
       console.log('[STORE:ACTION] update project: id=' + data.id + ' name='+ data.name);
-      api.updateProject(data)
-        .then(response => {
-          console.log("Response: '" + response.data + "' with status: " + response.status);
-          commit('UPDATE_PROJECT', {project, data});
-        })
-        .catch(error => {
-          console.log("Error: " + error);
-        })
+      commit('UPDATE_PROJECT', {project, data});
     },
 
     deleteProject({commit}, project ) {
       console.log('[STORE:ACTION] delete project: id=' + project.id);
-      api.deleteProject(project)
-        .then(response => {
-          console.log("Response: with status: " + response.status);
-          commit('DELETE_PROJECT', project);
-        })
-        .catch(error => {
-          console.log("Error: " + error);
-        })
+      commit('DELETE_PROJECT', project);
     },
 
     addItem({commit}, project) {
@@ -292,42 +283,19 @@ export default new Vuex.Store({
         finish: finishDateTime,
         isCompleted: false
       }
-
-      api.addItem(project.id, data)
-        .then(response => {
-          console.log('Response: ' + response.data + ' with status: ' + response.status);
-          data.id = response.data.id;
-          commit('ADD_ITEM', {project, data});
-          commit('UPDATE_PERCENT');
-        })
-        .catch(error => {
-          console.log("Error: " + error);
-        })
+      commit('ADD_ITEM', {project, data});
+      commit('UPDATE_PERCENT');
     },
 
     updateItem({commit}, { item, data} ) {
       console.log('[STORE:ACTION] update item: id=' + data.id + ' content='+ data.content);
-      api.updateItem(data)
-        .then(response => {
-          console.log("Response: '" + response.data + "' with status: " + response.status);
-          commit('UPDATE_ITEM', {item, data});
-          commit('UPDATE_PERCENT');
-        })
-        .catch(error => {
-          console.log("Error: " + error);
-        })
+      commit('UPDATE_ITEM', {item, data});
+      commit('UPDATE_PERCENT');
     },
 
     deleteItem({commit}, {item, project, index} ) {
       console.log('[STORE:ACTION] delete item: id=' + item.id);
-      api.deleteItem(item.id)
-        .then(response => {
-          console.log("Response: with status: " + response.status);
-          commit('DELETE_ITEM', {item, project, index} );
-        })
-        .catch(error => {
-          console.log("Error: " + error);
-        })
+      commit('DELETE_ITEM', {item, project, index} );
     },
 
     updateTodoistToken({commit}, { token} ) {
@@ -343,14 +311,14 @@ export default new Vuex.Store({
     },
 
     syncTasks({commit}, {from, to}) {
-        console.log('[STORE:ACTION] syncTasks: from=' + from + ' to=' + to);
-        api.syncTasks(from, to)
-            .then(response => {
-                console.log("Response: '" + response.data + "' with status: " + response.status);
-            })
-            .catch(error => {
-                console.log("Error: " + error);
-            })
+      console.log('[STORE:ACTION] syncTasks: from=' + from + ' to=' + to);
+      api.syncTasks(from, to)
+        .then(response => {
+          console.log("Response: '" + response.data + "' with status: " + response.status);
+        })
+        .catch(error => {
+          console.log("Error: " + error);
+        })
     }
   },
 

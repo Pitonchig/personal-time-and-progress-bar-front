@@ -104,7 +104,8 @@ export default {
       console.log('[UI:ItemEditor] update');
       const start = new Date(this.$refs.startDate.value + 'T' + this.$refs.startTime.value);
       const finish = new Date(this.$refs.finishDate.value + 'T' + this.$refs.finishTime.value);
-
+      console.log('[UI:ItemEditor] start =' + start);
+      console.log('[UI:ItemEditor] finish =' + finish);
       var item = this.$data.model;
       var data = {
         id: item.id,
