@@ -59,7 +59,8 @@ export default new Vuex.Store({
         id: payload.id,
         name: payload.name,
         percent: payload.percent,
-        items: payload.items
+        items: payload.items,
+        isDeleted: payload.isDeleted,
       });
     },
 
@@ -70,8 +71,10 @@ export default new Vuex.Store({
 
     DELETE_PROJECT(state, project) {
       console.log('[STORE:MUTATIONS] delete project: ' + project.id);
-      const i = state.projects.map(item => item.id).indexOf(project.id);
-      state.projects.splice(i, 1);
+      project.isDeleted = true;
+      //const i = state.projects.map(item => item.id).indexOf(project.id);
+      //state.projects.splice(i, 1);
+
     },
 
     SET_PROJECTS(state, payload) {
@@ -88,13 +91,16 @@ export default new Vuex.Store({
 //            var finish = new Date(new Date(item.finish).getTime() - timeZoneOffset);
             var start = new Date(item.start);
             var finish = new Date(item.finish);
+            var completion = new Date(item.completion);
 
             var task = {
               id: item.id,
               content: item.content,
               isCompleted: item.isCompleted,
               start: start,
-              finish: finish
+              finish: finish,
+              completion: completion,
+              isDeleted: item.isDeleted
             }
             tasks.push(task);
             if(task.isCompleted) completed ++;
@@ -105,7 +111,8 @@ export default new Vuex.Store({
           id: value.id,
           name: value.name,
           percent: percent,
-          items: tasks
+          items: tasks,
+          isDeleted: value.isDeleted
         }
         state.projects.push(project);
       });
@@ -118,7 +125,9 @@ export default new Vuex.Store({
         content: data.content,
         start: data.start,
         finish: data.finish,
-        isCompleted: data.isCompleted
+        isCompleted: data.isCompleted,
+        completion: null,
+        isDeleted: false
       });
       const completed = project.items.filter(it => it.isCompleted).length;
       project.percent = (project.items.length==0) ? 0 : Math.round(completed * 100 /project.items.length);;
@@ -137,7 +146,8 @@ export default new Vuex.Store({
 
     DELETE_ITEM(state, {item, project, index}) {
         console.log('[STORE:MUTATIONS] delete item: index=' + index);
-        project.items.splice(index, 1);
+        item.isDeleted = true;
+        //project.items.splice(index, 1);
     },
 
     UPDATE_PERCENT(state) {
@@ -281,7 +291,9 @@ export default new Vuex.Store({
         content: 'task content',
         start: new Date(),
         finish: finishDateTime,
-        isCompleted: false
+        completion: null,
+        isCompleted: false,
+        isDeleted: false,
       }
       commit('ADD_ITEM', {project, data});
       commit('UPDATE_PERCENT');

@@ -21,8 +21,8 @@
         <button type="button" class="close" aria-label="Close" @click="deleteProject(model)">&times;</button>
       </div>
       <ul class="list-group" v-show="open" :class="{'open': open}">
-        <span v-for="(it, index) in model.items" class="row">
-          <item  class="col item" :model="it" v-bind:parent="model"></item>
+        <span v-show="!it.isDeleted" v-for="(it, index) in model.items" class="row">
+          <item class="col item" :model="it" v-bind:parent="model"></item>
           <button type="button" class="close float-right float-top col-0 item" aria-label="Close" @click="deleteItem(it, model, index)">&times;</button>
         </span>
         <li @click="addItem(model)" class="list-group-item list-group-item-dark text-left">add new task</li>

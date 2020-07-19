@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-show="!model.isDeleted">
     <li class="list-group-item text-left" v-bind:class="{
                 'list-group-item-success': model.isCompleted,
                 'list-group-item-primary': !model.isCompleted && getPercent <100,
@@ -35,9 +35,16 @@ export default {
   computed: {
     getPercent: function() {
       var total = this.model.finish-this.model.start;
-      if(total < 0 ) return 0;
+      if(total <= 0 ) return 0;
 
-      var delta = this.model.finish-Date.now();
+      //var delta = this.model.finish-Date.now();
+      var delta;
+      if (this.model.isCompleted) {
+        delta = this.model.finish-this.model.completion;
+      } else {
+        delta = this.model.finish-Date.now();
+      }
+
       var percent = Math.round(100* (total-delta)/total);
 
       if(percent < 0) percent=0;
@@ -66,7 +73,7 @@ export default {
       console.log('[UI:Item] checked: flag=' + flag + ' id=' + item.id + ' item.content=' + item.content);
       var data = item;
       data.isCompleted = flag;
-
+      if (flag) data.completion = new Date();
       this.$store.dispatch('updateItem', {item, data});
     },
 

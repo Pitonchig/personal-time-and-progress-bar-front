@@ -11,7 +11,7 @@
     </div>
     <hr>
     <ul class="list-group-item">
-      <Project v-for="(model, index) in projectsList" :model="model" v-bind:key="index"></project>
+      <Project v-show="!model.isDeleted" v-for="(model, index) in projectsList" :model="model" v-bind:key="index"></project>
       <li @click="addProject" class="list-group-item list-group-item-dark text-left">add new project</li>
     </ul>
 
